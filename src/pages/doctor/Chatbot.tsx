@@ -11,20 +11,44 @@ const DoctorChatbot = () => {
   ]);
   const [input, setInput] = useState("");
 
-  const handleSend = () => {
-    if (!input.trim()) return;
-    
-    setMessages([...messages, { role: "user", content: input }]);
-    setInput("");
-    
-    // Simulate AI response
-    setTimeout(() => {
-      setMessages(prev => [...prev, { 
-        role: "assistant", 
-        content: "I understand your query. Let me help you with that information." 
-      }]);
-    }, 1000);
-  };
+  const handleSend = async () => {
+  if (!input.trim()) return;
+
+  const userMessage = { role: "user", content: input };
+
+  setMessages((prev) => [...prev, userMessage]);
+  setInput("");
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini",
+        messages: [...messages, userMessage],
+      }),
+    });
+
+    const data = await res.json();
+
+    const aiMessage = {
+      role: "assistant",
+      content: data?.choices?.[0]?.message?.content || "Error processing.",
+    };
+
+    setMessages((prev) => [...prev, aiMessage]);
+  } catch (err) {
+    console.error(err);
+    setMessages((prev) => [
+      ...prev,
+      { role: "assistant", content: "Something went wrong." },
+    ]);
+  }
+};
+
 
   return (
     <div className="flex min-h-screen bg-background">

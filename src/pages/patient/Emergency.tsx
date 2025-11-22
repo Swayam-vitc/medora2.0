@@ -4,17 +4,25 @@ import { Button } from "@/components/ui/button";
 import { MapPin, Phone, Hospital, Ambulance, AlertCircle } from "lucide-react";
 
 const Emergency = () => {
+  const emergencyNumber = "102"; // You can change based on location
+
   const nearbyFacilities = [
-    { name: "City General Hospital", distance: "2.5 km", phone: "+1 (555) 111-2222", type: "Hospital" },
-    { name: "MedCare Clinic", distance: "1.8 km", phone: "+1 (555) 333-4444", type: "Clinic" },
-    { name: "Emergency Care Center", distance: "3.2 km", phone: "+1 (555) 555-6666", type: "Emergency" },
+    { name: "KLE Hospital", distance: "2.5 km", phone: "+91 08312473777", type: "Hospital" },
+    { name: "MedCare Clinic", distance: "1.8 km", phone: "+91 8073451040", type: "Clinic" },
+    { name: "Shivam", distance: "3.2 km", phone: "+91 9380069879", type: "Emergency" },
   ];
+
+  const callNumber = (number: string) => {
+    window.location.href = `tel:${number}`;
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
       <PatientSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
+          
+          {/* Header */}
           <div>
             <h1 className="text-3xl font-bold flex items-center gap-3">
               <AlertCircle className="h-8 w-8 text-destructive" />
@@ -23,7 +31,9 @@ const Emergency = () => {
             <p className="text-muted-foreground">Locate nearby medical facilities and emergency services</p>
           </div>
 
+          {/* Emergency Cards */}
           <div className="grid md:grid-cols-2 gap-6">
+            {/* Emergency Call Card */}
             <Card className="border-destructive/50 bg-destructive/5">
               <CardContent className="p-6 text-center space-y-4">
                 <div className="h-16 w-16 mx-auto rounded-full bg-destructive/20 flex items-center justify-center">
@@ -31,15 +41,19 @@ const Emergency = () => {
                 </div>
                 <div>
                   <h3 className="text-xl font-bold">Emergency Helpline</h3>
-                  <p className="text-3xl font-bold text-destructive mt-2">911</p>
+                  <p className="text-3xl font-bold text-destructive mt-2">{emergencyNumber}</p>
                 </div>
-                <Button className="w-full bg-destructive hover:bg-destructive/90">
+                <Button
+                  className="w-full bg-destructive hover:bg-destructive/90"
+                  onClick={() => callNumber(emergencyNumber)}
+                >
                   <Phone className="mr-2 h-4 w-4" />
                   Call Emergency
                 </Button>
               </CardContent>
             </Card>
 
+            {/* Request Ambulance */}
             <Card className="border-border/50">
               <CardContent className="p-6 text-center space-y-4">
                 <div className="h-16 w-16 mx-auto rounded-full bg-primary/10 flex items-center justify-center">
@@ -49,7 +63,10 @@ const Emergency = () => {
                   <h3 className="text-xl font-bold">Request Ambulance</h3>
                   <p className="text-sm text-muted-foreground mt-2">Get immediate medical transport</p>
                 </div>
-                <Button className="w-full bg-gradient-to-r from-primary to-medical-teal">
+                <Button
+                  className="w-full bg-gradient-to-r from-primary to-medical-teal"
+                  onClick={() => callNumber(emergencyNumber)}
+                >
                   <Ambulance className="mr-2 h-4 w-4" />
                   Request Ambulance
                 </Button>
@@ -57,6 +74,7 @@ const Emergency = () => {
             </Card>
           </div>
 
+          {/* Nearby Facilities */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -88,7 +106,11 @@ const Emergency = () => {
                         <MapPin className="h-4 w-4 mr-2" />
                         Directions
                       </Button>
-                      <Button variant="outline" size="sm">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => callNumber(facility.phone)}
+                      >
                         <Phone className="h-4 w-4 mr-2" />
                         Call
                       </Button>
@@ -99,6 +121,7 @@ const Emergency = () => {
             </CardContent>
           </Card>
 
+          {/* Info Card */}
           <Card className="bg-gradient-to-r from-destructive/10 to-orange-500/10 border-destructive/20">
             <CardContent className="p-6">
               <div className="flex items-start gap-4">
@@ -116,6 +139,7 @@ const Emergency = () => {
               </div>
             </CardContent>
           </Card>
+
         </div>
       </main>
     </div>

@@ -28,7 +28,7 @@ const PatientSettings = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input defaultValue="John Doe" />
+                  <Input defaultValue="Dr. Sahil Pandey" />
                 </div>
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
@@ -41,11 +41,11 @@ const PatientSettings = () => {
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input type="tel" defaultValue="+1 (555) 123-4567" />
+                <Input type="tel" defaultValue="+91 92934 56564" />
               </div>
               <div className="space-y-2">
                 <Label>Address</Label>
-                <Input defaultValue="123 Main St, City, State 12345" />
+                <Input defaultValue="udyamb multispeciality hospital" />
               </div>
               <Button className="bg-gradient-to-r from-primary to-medical-teal">
                 Save Changes

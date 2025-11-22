@@ -1,85 +1,169 @@
-import PatientSidebar from "@/components/PatientSidebar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useState } from "react";
+import DoctorSidebar from "@/components/DoctorSidebar";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, User, Plus } from "lucide-react";
+import { Calendar, Clock, User, Video } from "lucide-react";
+import { useAppointments } from "@/context/AppointmentsContext";
+import { v4 as uuidv4 } from "uuid";
+import {
+  Dialog,
+  DialogTrigger,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
-const PatientAppointments = () => {
-  const appointments = [
-    { id: 1, doctor: "Dr. Sarah Smith", specialty: "Cardiologist", date: "Jan 20, 2024", time: "10:00 AM", status: "Confirmed" },
-    { id: 2, doctor: "Dr. Mike Johnson", specialty: "General Physician", date: "Jan 25, 2024", time: "02:30 PM", status: "Pending" },
-  ];
+const Appointments = () => {
+  const { appointments, addAppointment } = useAppointments();
+
+  const [open, setOpen] = useState(false);
+
+  const [doctor, setDoctor] = useState("");
+  const [date, setDate] = useState("");
+  const [time, setTime] = useState("");
+  const [location, setLocation] = useState("");
+  const [type, setType] = useState("");
+
+  const handleSubmit = () => {
+    if (!doctor || !date || !time) return;
+
+    addAppointment({
+      id: uuidv4(),
+      doctor,
+      date,
+      time,
+      location,
+      type,
+    });
+
+    setOpen(false);
+    setDoctor("");
+    setDate("");
+    setTime("");
+    setLocation("");
+    setType("");
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
-      <PatientSidebar />
+      <DoctorSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
+
           <div className="flex items-center justify-between">
             <div>
-              <h1 className="text-3xl font-bold">My Appointments</h1>
-              <p className="text-muted-foreground">View and manage your appointments</p>
+              <h1 className="text-3xl font-bold">Appointments</h1>
+              <p className="text-muted-foreground">Manage your patient appointments</p>
             </div>
-            <Button className="bg-gradient-to-r from-primary to-medical-teal">
-              <Plus className="mr-2 h-4 w-4" />
-              Book Appointment
-            </Button>
+
+            <Dialog open={open} onOpenChange={setOpen}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-primary to-medical-teal">
+                  <Calendar className="mr-2 h-4 w-4" />
+                  New Appointment
+                </Button>
+              </DialogTrigger>
+
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Add New Appointment</DialogTitle>
+                </DialogHeader>
+
+                <div className="space-y-4">
+                  <div>
+                    <Label>Doctor Name</Label>
+                    <Input
+                      value={doctor}
+                      onChange={(e) => setDoctor(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Date</Label>
+                    <Input
+                      type="date"
+                      value={date}
+                      onChange={(e) => setDate(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Time</Label>
+                    <Input
+                      type="time"
+                      value={time}
+                      onChange={(e) => setTime(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Location</Label>
+                    <Input
+                      placeholder="Online / Hospital"
+                      value={location}
+                      onChange={(e) => setLocation(e.target.value)}
+                    />
+                  </div>
+
+                  <div>
+                    <Label>Type</Label>
+                    <Input
+                      placeholder="Consultation / Follow-up"
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                    />
+                  </div>
+
+                  <Button className="w-full" onClick={handleSubmit}>
+                    Save Appointment
+                  </Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           <div className="grid gap-4">
-            {appointments.map((appointment) => (
-              <Card key={appointment.id} className="border-border/50 hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4">
-                      <div className="h-14 w-14 rounded-full bg-gradient-to-br from-primary to-medical-teal flex items-center justify-center">
-                        <User className="h-7 w-7 text-primary-foreground" />
-                      </div>
-                      <div>
-                        <h3 className="font-semibold text-lg">{appointment.doctor}</h3>
-                        <p className="text-sm text-muted-foreground">{appointment.specialty}</p>
-                        <div className="flex items-center gap-4 mt-2 text-sm text-muted-foreground">
-                          <span className="flex items-center gap-1">
-                            <Calendar className="h-4 w-4" />
-                            {appointment.date}
-                          </span>
-                          <span className="flex items-center gap-1">
-                            <Clock className="h-4 w-4" />
-                            {appointment.time}
-                          </span>
+            {appointments.length === 0 ? (
+              <p className="text-muted-foreground p-4">No appointments yet.</p>
+            ) : (
+              appointments.map((apt) => (
+                <Card key={apt.id} className="border-border/50 hover:shadow-lg transition-shadow">
+                  <CardContent className="p-6">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                          <User className="h-6 w-6 text-primary" />
+                        </div>
+                        <div>
+                          <h3 className="font-semibold">{apt.doctor}</h3>
+                          <p className="text-sm text-muted-foreground">{apt.date}</p>
+
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                            <span className="flex items-center gap-1">
+                              <Clock className="h-4 w-4" /> {apt.time}
+                            </span>
+                            <span>{apt.type}</span>
+                            <span>{apt.location}</span>
+                          </div>
                         </div>
                       </div>
+
+                      <Button variant="outline" size="sm">
+                        <Video className="h-4 w-4 mr-2" /> Join Call
+                      </Button>
                     </div>
-                    <div className="flex items-center gap-3">
-                      <span className={`px-3 py-1 rounded-full text-sm ${
-                        appointment.status === "Confirmed" 
-                          ? "bg-health-green/10 text-health-green" 
-                          : "bg-yellow-500/10 text-yellow-600"
-                      }`}>
-                        {appointment.status}
-                      </span>
-                      <Button variant="outline" size="sm">Reschedule</Button>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
+                  </CardContent>
+                </Card>
+              ))
+            )}
           </div>
 
-          <Card>
-            <CardHeader>
-              <CardTitle>Book a New Appointment</CardTitle>
-            </CardHeader>
-            <CardContent className="text-center py-8">
-              <p className="text-muted-foreground mb-4">Select a doctor and time slot to book your appointment</p>
-              <Button className="bg-gradient-to-r from-primary to-medical-teal">
-                Browse Doctors
-              </Button>
-            </CardContent>
-          </Card>
         </div>
       </main>
     </div>
   );
 };
 
-export default PatientAppointments;
+export default Appointments;

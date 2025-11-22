@@ -3,14 +3,42 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, User, Phone, Mail } from "lucide-react";
+import { useState, useRef } from "react";
 
 const Patients = () => {
-  const patients = [
-    { id: 1, name: "John Smith", age: 45, phone: "+1 555-0101", email: "john@email.com", lastVisit: "2024-01-15" },
-    { id: 2, name: "Sarah Johnson", age: 32, phone: "+1 555-0102", email: "sarah@email.com", lastVisit: "2024-01-14" },
-    { id: 3, name: "Mike Wilson", age: 58, phone: "+1 555-0103", email: "mike@email.com", lastVisit: "2024-01-13" },
-    { id: 4, name: "Emily Davis", age: 28, phone: "+1 555-0104", email: "emily@email.com", lastVisit: "2024-01-12" },
-  ];
+  const [patients, setPatients] = useState([
+    // You can add initial mock data here if needed
+  ]);
+
+  const dialogRef = useRef<HTMLDialogElement>(null);
+
+  const [newPatient, setNewPatient] = useState({
+    name: "",
+    age: "",
+    phone: "",
+    email: "",
+  });
+
+  const openDialog = () => dialogRef.current?.showModal();
+  const closeDialog = () => dialogRef.current?.close();
+
+  const handleSubmit = () => {
+    if (!newPatient.name.trim()) return;
+
+    const patient = {
+      id: Date.now().toString(),
+      name: newPatient.name,
+      age: newPatient.age,
+      phone: newPatient.phone,
+      email: newPatient.email,
+      lastVisit: "New Patient",
+    };
+
+    setPatients([...patients, patient]);
+
+    closeDialog();
+    setNewPatient({ name: "", age: "", phone: "", email: "" });
+  };
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -27,7 +55,10 @@ const Patients = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input placeholder="Search patients..." className="pl-10" />
             </div>
-            <Button className="bg-gradient-to-r from-primary to-medical-teal">
+            <Button
+              onClick={openDialog}
+              className="bg-gradient-to-r from-primary to-medical-teal"
+            >
               Add Patient
             </Button>
           </div>
@@ -68,6 +99,45 @@ const Patients = () => {
             ))}
           </div>
         </div>
+
+        {/* Simple Add Patient Dialog */}
+        <dialog ref={dialogRef} className="rounded-lg p-6">
+          <h2 className="text-lg font-bold mb-4">Add Patient</h2>
+
+          <div className="space-y-3">
+            <Input
+              placeholder="Full Name"
+              value={newPatient.name}
+              onChange={(e) => setNewPatient({ ...newPatient, name: e.target.value })}
+            />
+            <Input
+              placeholder="Age"
+              type="number"
+              value={newPatient.age}
+              onChange={(e) => setNewPatient({ ...newPatient, age: e.target.value })}
+            />
+            <Input
+              placeholder="Phone Number"
+              value={newPatient.phone}
+              onChange={(e) => setNewPatient({ ...newPatient, phone: e.target.value })}
+            />
+            <Input
+              placeholder="Email"
+              value={newPatient.email}
+              onChange={(e) => setNewPatient({ ...newPatient, email: e.target.value })}
+            />
+          </div>
+
+          <div className="flex justify-end gap-3 mt-6">
+            <Button variant="outline" onClick={closeDialog}>Cancel</Button>
+            <Button
+              className="bg-gradient-to-r from-primary to-medical-teal"
+              onClick={handleSubmit}
+            >
+              Save
+            </Button>
+          </div>
+        </dialog>
       </main>
     </div>
   );

@@ -1,14 +1,24 @@
 import DoctorSidebar from "@/components/DoctorSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Calendar, Activity, AlertCircle } from "lucide-react";
+import { Users, Calendar, Activity, AlertCircle, Clock } from "lucide-react";
+import { useAppointments } from "@/context/AppointmentsContext";
 
 const DoctorDashboard = () => {
+  const { appointments } = useAppointments();
+
   const stats = [
-    { icon: Calendar, label: "Today's Appointments", value: "12", color: "text-primary" },
-    { icon: Users, label: "Total Patients", value: "248", color: "text-medical-teal" },
-    { icon: Activity, label: "Active Monitors", value: "18", color: "text-health-green" },
+    {
+      icon: Calendar,
+      label: "Today's Appointments",
+      value: appointments.length.toString(),
+      color: "text-primary",
+    },
+    { icon: Users, label: "Total Patients", value: "0", color: "text-medical-teal" },
+    { icon: Activity, label: "Active Monitors", value: "8", color: "text-health-green" },
     { icon: AlertCircle, label: "Pending Reports", value: "5", color: "text-destructive" },
   ];
+
+  const latestThree = [...appointments].slice(-3).reverse();
 
   return (
     <div className="flex min-h-screen bg-background">
@@ -17,7 +27,7 @@ const DoctorDashboard = () => {
         <div className="max-w-7xl mx-auto space-y-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, Dr. Smith</p>
+            <p className="text-muted-foreground">Welcome back, Doctor</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -42,7 +52,22 @@ const DoctorDashboard = () => {
                 <CardTitle>Upcoming Appointments</CardTitle>
               </CardHeader>
               <CardContent>
-                <p className="text-muted-foreground">No appointments scheduled for now.</p>
+                {latestThree.length === 0 ? (
+                  <p className="text-muted-foreground">No appointments scheduled yet.</p>
+                ) : (
+                  latestThree.map((apt) => (
+                    <div
+                      key={apt.id}
+                      className="p-3 border-b flex items-center justify-between"
+                    >
+                      <div className="font-medium">{apt.doctor}</div>
+                      <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <Clock className="h-4 w-4" />
+                        {apt.time}
+                      </div>
+                    </div>
+                  ))
+                )}
               </CardContent>
             </Card>
 

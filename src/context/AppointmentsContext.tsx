@@ -1,0 +1,57 @@
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
+
+export interface Appointment {
+  _id?: string;
+  doctor: string;
+  date: string;
+  time: string;
+  location: string;
+  type: string;
+}
+
+interface AppointmentsContextType {
+  appointments: Appointment[];
+  addAppointment: (apt: Appointment) => Promise<void>;
+}
+
+const AppointmentsContext = createContext<AppointmentsContextType | undefined>(undefined);
+
+export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
+  const [appointments, setAppointments] = useState<Appointment[]>([]);
+
+  // Fetch from DB on page load
+  useEffect(() => {
+    const fetchAppointments = async () => {
+      const res = await fetch("http://localhost:5000/api/appointments");
+      const data = await res.json();
+      setAppointments(data);
+    };
+    fetchAppointments();
+  }, []);
+
+  // Add new appointment to DB
+  const addAppointment = async (apt: Appointment) => {
+    const res = await fetch("http://localhost:5000/api/appointments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(apt),
+    });
+
+    const data = await res.json();
+    setAppointments((prev) => [...prev, data]);
+  };
+
+  return (
+    <AppointmentsContext.Provider value={{ appointments, addAppointment }}>
+      {children}
+    </AppointmentsContext.Provider>
+  );
+};
+
+export const useAppointments = () => {
+  const context = useContext(AppointmentsContext);
+  if (!context) {
+    throw new Error("useAppointments must be used within AppointmentsProvider");
+  }
+  return context;
+};

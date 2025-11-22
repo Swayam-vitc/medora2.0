@@ -28,7 +28,7 @@ const DoctorSettings = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input defaultValue="Dr. John Smith" />
+                  <Input defaultValue="Dr. Aakash Sharma" />
                 </div>
                 <div className="space-y-2">
                   <Label>Specialization</Label>
@@ -37,11 +37,11 @@ const DoctorSettings = () => {
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input type="email" defaultValue="doctor@medora.com" />
+                <Input type="email" defaultValue="aakashsharma@medora.com" />
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input type="tel" defaultValue="+1 (555) 123-4567" />
+                <Input type="tel" defaultValue="+91 97968 32873" />
               </div>
               <Button className="bg-gradient-to-r from-primary to-medical-teal">
                 Save Changes

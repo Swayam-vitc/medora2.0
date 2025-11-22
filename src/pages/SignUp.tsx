@@ -12,14 +12,17 @@ type UserRole = "patient" | "doctor" | null;
 const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
     password: "",
     confirmPassword: "",
     phone: "",
-    specialization: "", // for doctors
+    specialization: "",
   });
 
   const handleRoleSelect = (role: UserRole) => {
@@ -33,9 +36,21 @@ const SignUp = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // ---------------------------
+  // Submit → Send to Backend
+  // ---------------------------
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
+    if (!selectedRole) {
+      toast({
+        title: "Select a Role",
+        description: "Please choose doctor or patient",
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (formData.password !== formData.confirmPassword) {
       toast({
         title: "Error",
@@ -45,18 +60,59 @@ const SignUp = () => {
       return;
     }
 
-    // TODO: Implement actual signup logic with backend
-    toast({
-      title: "Success",
-      description: "Account created successfully!",
-    });
+    setLoading(true);
 
-    // Navigate to appropriate dashboard
-    if (selectedRole === "doctor") {
-      navigate("/doctor/dashboard");
-    } else {
-      navigate("/patient/dashboard");
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/signup", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          name: formData.name,
+          email: formData.email,
+          password: formData.password,
+          confirmPassword: formData.confirmPassword,
+          phone: formData.phone,
+          role: selectedRole,
+          specialization: selectedRole === "doctor" ? formData.specialization : "",
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast({
+          title: "Signup Failed",
+          description: data.message || "Something went wrong",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Save token + user info
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
+
+      toast({
+        title: "Success!",
+        description: "Account created successfully",
+      });
+
+      // Redirect based on role
+      if (selectedRole === "doctor") {
+        navigate("/doctor/dashboard");
+      } else {
+        navigate("/patient/dashboard");
+      }
+    } catch (error) {
+      toast({
+        title: "Network Error",
+        description: "Unable to connect to server",
+        variant: "destructive",
+      });
     }
+
+    setLoading(false);
   };
 
   return (
@@ -83,6 +139,7 @@ const SignUp = () => {
               : `Sign up as a ${selectedRole}`}
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           {!selectedRole ? (
             <div className="space-y-4">
@@ -95,6 +152,7 @@ const SignUp = () => {
                 <span className="text-lg font-semibold">I'm a Patient</span>
                 <span className="text-sm text-muted-foreground">Book appointments & manage health</span>
               </Button>
+
               <Button
                 variant="outline"
                 className="w-full h-24 flex flex-col gap-2 hover:border-primary hover:bg-primary/5 transition-all"
@@ -107,6 +165,8 @@ const SignUp = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
+              
+              {/* Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <Input
@@ -118,6 +178,8 @@ const SignUp = () => {
                   required
                 />
               </div>
+
+              {/* Email */}
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <Input
@@ -130,6 +192,8 @@ const SignUp = () => {
                   required
                 />
               </div>
+
+              {/* Phone */}
               <div className="space-y-2">
                 <Label htmlFor="phone">Phone Number</Label>
                 <Input
@@ -142,6 +206,8 @@ const SignUp = () => {
                   required
                 />
               </div>
+
+              {/* Specialization for doctors */}
               {selectedRole === "doctor" && (
                 <div className="space-y-2">
                   <Label htmlFor="specialization">Specialization</Label>
@@ -155,6 +221,8 @@ const SignUp = () => {
                   />
                 </div>
               )}
+
+              {/* Password */}
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <Input
@@ -166,6 +234,8 @@ const SignUp = () => {
                   required
                 />
               </div>
+
+              {/* Confirm Password */}
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <Input
@@ -177,12 +247,16 @@ const SignUp = () => {
                   required
                 />
               </div>
+
+              {/* Submit button */}
               <Button
                 type="submit"
                 className="w-full bg-gradient-to-r from-primary to-medical-teal"
+                disabled={loading}
               >
-                Create Account
+                {loading ? "Creating Account..." : "Create Account"}
               </Button>
+
               <div className="text-center text-sm">
                 Already have an account?{" "}
                 <Button

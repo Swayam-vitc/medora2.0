@@ -5,7 +5,7 @@ import { Video, Clock, Calendar, User } from "lucide-react";
 
 const PatientTelemedicine = () => {
   const consultations = [
-    { id: 1, doctor: "Dr. Sarah Smith", specialty: "Cardiologist", date: "Jan 20, 2024", time: "10:00 AM", status: "Scheduled" },
+   
   ];
 
   return (

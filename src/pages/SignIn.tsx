@@ -10,6 +10,8 @@ import { useToast } from "@/hooks/use-toast";
 const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -22,24 +24,58 @@ const SignIn = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  // --------------------------
+  // BACKEND LOGIN LOGIC
+  // --------------------------
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // TODO: Implement actual signin logic with backend
-    // For now, mock different user types
-    const isDemoDoctor = formData.email.includes("doctor");
-    
-    toast({
-      title: "Success",
-      description: "Signed in successfully!",
-    });
 
-    // Navigate based on user type
-    if (isDemoDoctor) {
-      navigate("/doctor/dashboard");
-    } else {
-      navigate("/patient/dashboard");
+    setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        toast({
+          title: "Login Failed",
+          description: data.message || "Invalid email or password",
+          variant: "destructive",
+        });
+        setLoading(false);
+        return;
+      }
+
+      // Save token + user info
+      localStorage.setItem("token", data.token);
+      localStorage.setItem("user", JSON.stringify(data));
+
+      toast({
+        title: "Welcome Back!",
+        description: "Signed in successfully",
+      });
+
+      // Redirect based on role
+      if (data.role === "doctor") {
+        navigate("/doctor/dashboard");
+      } else {
+        navigate("/patient/dashboard");
+      }
+
+    } catch (error) {
+      toast({
+        title: "Network Error",
+        description: "Cannot connect to server",
+        variant: "destructive",
+      });
     }
+
+    setLoading(false);
   };
 
   return (
@@ -64,8 +100,11 @@ const SignIn = () => {
             Sign in to your account to continue
           </CardDescription>
         </CardHeader>
+
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
+            
+            {/* Email */}
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
@@ -78,13 +117,15 @@ const SignIn = () => {
                 required
               />
             </div>
+
+            {/* Password */}
             <div className="space-y-2">
               <div className="flex items-center justify-between">
                 <Label htmlFor="password">Password</Label>
                 <Button
                   variant="link"
                   className="p-0 h-auto text-sm text-primary"
-                  onClick={() => toast({ title: "Feature coming soon!" })}
+                  onClick={() => toast({ title: "Reset password coming soon!" })}
                 >
                   Forgot password?
                 </Button>
@@ -98,12 +139,17 @@ const SignIn = () => {
                 required
               />
             </div>
+
+            {/* Submit button */}
             <Button
               type="submit"
               className="w-full bg-gradient-to-r from-primary to-medical-teal"
+              disabled={loading}
             >
-              Sign In
+              {loading ? "Signing In..." : "Sign In"}
             </Button>
+
+            {/* Create Account */}
             <div className="text-center text-sm">
               Don't have an account?{" "}
               <Button
@@ -116,6 +162,7 @@ const SignIn = () => {
             </div>
           </form>
         </CardContent>
+
       </Card>
     </div>
   );
