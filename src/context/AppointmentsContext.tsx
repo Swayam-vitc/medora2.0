@@ -17,12 +17,15 @@ interface AppointmentsContextType {
 const AppointmentsContext = createContext<AppointmentsContextType | undefined>(undefined);
 
 export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
+  // API URL from environment variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
   // Fetch from DB on page load
   useEffect(() => {
     const fetchAppointments = async () => {
-      const res = await fetch("http://localhost:5000/api/appointments");
+      const res = await fetch(`${API_URL}/api/appointments`);
       const data = await res.json();
       setAppointments(data);
     };
@@ -31,7 +34,7 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
 
   // Add new appointment to DB
   const addAppointment = async (apt: Appointment) => {
-    const res = await fetch("http://localhost:5000/api/appointments", {
+    const res = await fetch(`${API_URL}/api/appointments`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(apt),

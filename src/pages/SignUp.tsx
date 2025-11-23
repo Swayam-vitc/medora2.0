@@ -13,6 +13,9 @@ const SignUp = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
+  // API URL from environment variable
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+
   const [loading, setLoading] = useState(false);
   const [selectedRole, setSelectedRole] = useState<UserRole>(null);
 
@@ -63,7 +66,7 @@ const SignUp = () => {
     setLoading(true);
 
     try {
-      const res = await fetch("http://localhost:5000/api/auth/signup", {
+      const res = await fetch(`${API_URL}/api/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -134,8 +137,8 @@ const SignUp = () => {
           </div>
           <CardTitle className="text-2xl text-center">Create Account</CardTitle>
           <CardDescription className="text-center">
-            {!selectedRole 
-              ? "Choose your role to get started" 
+            {!selectedRole
+              ? "Choose your role to get started"
               : `Sign up as a ${selectedRole}`}
           </CardDescription>
         </CardHeader>
@@ -165,7 +168,7 @@ const SignUp = () => {
             </div>
           ) : (
             <form onSubmit={handleSubmit} className="space-y-4">
-              
+
               {/* Name */}
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>

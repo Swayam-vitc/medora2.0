@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import DoctorSidebar from "@/components/DoctorSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, Activity, AlertCircle, Clock } from "lucide-react";
@@ -5,6 +6,20 @@ import { useAppointments } from "@/context/AppointmentsContext";
 
 const DoctorDashboard = () => {
   const { appointments } = useAppointments();
+  const [userName, setUserName] = useState("Doctor");
+
+  useEffect(() => {
+    // Load user name from localStorage
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserName(user.name || "Doctor");
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
 
   const stats = [
     {
@@ -27,7 +42,7 @@ const DoctorDashboard = () => {
         <div className="max-w-7xl mx-auto space-y-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, Doctor</p>
+            <p className="text-muted-foreground">Welcome back, {userName}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -55,9 +70,9 @@ const DoctorDashboard = () => {
                 {latestThree.length === 0 ? (
                   <p className="text-muted-foreground">No appointments scheduled yet.</p>
                 ) : (
-                  latestThree.map((apt) => (
+                  latestThree.map((apt, index) => (
                     <div
-                      key={apt.id}
+                      key={apt._id || index}
                       className="p-3 border-b flex items-center justify-between"
                     >
                       <div className="font-medium">{apt.doctor}</div>

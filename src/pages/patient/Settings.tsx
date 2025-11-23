@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import PatientSidebar from "@/components/PatientSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -5,8 +6,55 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { User, Bell, Lock, Shield } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const PatientSettings = () => {
+  const { toast } = useToast();
+  const [userData, setUserData] = useState({
+    name: "",
+    email: "",
+    phone: "",
+  });
+
+  useEffect(() => {
+    // Load user data from localStorage
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserData({
+          name: user.name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+        });
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setUserData({
+      ...userData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSaveChanges = () => {
+    // Update localStorage
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      const user = JSON.parse(userStr);
+      const updatedUser = { ...user, ...userData };
+      localStorage.setItem("user", JSON.stringify(updatedUser));
+
+      toast({
+        title: "Success!",
+        description: "Profile updated successfully",
+      });
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <PatientSidebar />
@@ -28,7 +76,11 @@ const PatientSettings = () => {
               <div className="grid md:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Full Name</Label>
-                  <Input defaultValue="Dr. Sahil Pandey" />
+                  <Input
+                    name="name"
+                    value={userData.name}
+                    onChange={handleInputChange}
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Date of Birth</Label>
@@ -37,17 +89,30 @@ const PatientSettings = () => {
               </div>
               <div className="space-y-2">
                 <Label>Email</Label>
-                <Input type="email" defaultValue="patient@medora.com" />
+                <Input
+                  type="email"
+                  name="email"
+                  value={userData.email}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Phone</Label>
-                <Input type="tel" defaultValue="+91 92934 56564" />
+                <Input
+                  type="tel"
+                  name="phone"
+                  value={userData.phone}
+                  onChange={handleInputChange}
+                />
               </div>
               <div className="space-y-2">
                 <Label>Address</Label>
                 <Input defaultValue="udyamb multispeciality hospital" />
               </div>
-              <Button className="bg-gradient-to-r from-primary to-medical-teal">
+              <Button
+                className="bg-gradient-to-r from-primary to-medical-teal"
+                onClick={handleSaveChanges}
+              >
                 Save Changes
               </Button>
             </CardContent>

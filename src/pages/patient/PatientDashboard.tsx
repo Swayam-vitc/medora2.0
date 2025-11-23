@@ -1,9 +1,25 @@
+import { useState, useEffect } from "react";
 import PatientSidebar from "@/components/PatientSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Calendar, Activity, Pill, FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 const PatientDashboard = () => {
+  const [userName, setUserName] = useState("User");
+
+  useEffect(() => {
+    // Load user name from localStorage
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        setUserName(user.name || "User");
+      } catch (error) {
+        console.error("Error parsing user data:", error);
+      }
+    }
+  }, []);
+
   const stats = [
     { icon: Calendar, label: "Upcoming Appointments", value: "2", color: "text-primary" },
     { icon: Activity, label: "Health Score", value: "85%", color: "text-health-green" },
@@ -18,7 +34,7 @@ const PatientDashboard = () => {
         <div className="max-w-7xl mx-auto space-y-8">
           <div>
             <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, John Doe</p>
+            <p className="text-muted-foreground">Welcome back, {userName}</p>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
