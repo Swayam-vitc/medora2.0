@@ -32,7 +32,14 @@ cd <YOUR_PROJECT_NAME>
 # Step 3: Install the necessary dependencies.
 npm i
 
-# Step 4: Start the development server with auto-reloading and an instant preview.
+# Step 4: Set up your database and environment (IMPORTANT!)
+# EASY WAY: Use the automated setup script
+npm run setup
+
+# OR follow the detailed manual setup in SETUP.md
+# See SETUP.md for MongoDB Atlas cloud database setup
+
+# Step 5: Start the development server with auto-reloading and an instant preview.
 npm run dev
 ```
 
@@ -59,6 +66,58 @@ This project is built with:
 - React
 - shadcn-ui
 - Tailwind CSS
+- Node.js/Express (Backend)
+- MongoDB Atlas (Cloud Database)
+
+## Quick Setup (Recommended)
+
+**For the fastest setup experience:**
+
+```sh
+# Clone and navigate to the project
+git clone <YOUR_GIT_URL>
+cd <YOUR_PROJECT_NAME>
+
+# Run the automated setup script
+npm run setup
+
+# Then run the application (two terminals)
+# Terminal 1:
+npm run server
+
+# Terminal 2:
+npm run dev
+```
+
+📖 **See [QUICK_START.md](QUICK_START.md) for detailed instructions**
+
+## Database Setup
+
+This application uses **MongoDB Atlas** (a free cloud database) so it can run on any device without installing MongoDB locally.
+
+**📖 For detailed setup instructions, see [SETUP.md](SETUP.md)**
+
+Quick summary:
+1. Create a free MongoDB Atlas account
+2. Create a cluster and get your connection string
+3. Add the connection string to `backend/.env`
+4. Run the application
+
+## Running the Application
+
+You need to run both the frontend and backend:
+
+```sh
+# Terminal 1 - Start the backend server
+npm run server
+
+# Terminal 2 - Start the frontend
+npm run dev
+```
+
+The application will be available at:
+- **Frontend**: http://localhost:8080
+- **Backend API**: http://localhost:5001
 
 ## How can I deploy this project?
 

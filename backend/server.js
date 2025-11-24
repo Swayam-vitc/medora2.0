@@ -11,8 +11,13 @@ import userRoutes from "./routes/userRoutes.js";
 import diseaseRoutes from "./routes/diseaseRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
+import { fileURLToPath } from 'url';
+import { dirname, join } from 'path';
 
-dotenv.config();
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+
+dotenv.config({ path: join(__dirname, '.env') });
 
 const app = express();
 
