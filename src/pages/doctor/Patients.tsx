@@ -3,12 +3,31 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Search, User, Phone, Mail } from "lucide-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 
 const Patients = () => {
-  const [patients, setPatients] = useState([
-    // You can add initial mock data here if needed
-  ]);
+  const [patients, setPatients] = useState<any[]>([]);
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+  useEffect(() => {
+    const fetchPatients = async () => {
+      try {
+        const userStr = localStorage.getItem("user");
+        const token = userStr ? JSON.parse(userStr).token : null;
+
+        const res = await fetch(`${API_URL}/api/users/patients`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+        const data = await res.json();
+        setPatients(data);
+      } catch (error) {
+        console.error("Error fetching patients:", error);
+      }
+    };
+    fetchPatients();
+  }, []);
 
   const dialogRef = useRef<HTMLDialogElement>(null);
 
@@ -65,7 +84,7 @@ const Patients = () => {
 
           <div className="grid md:grid-cols-2 gap-4">
             {patients.map((patient) => (
-              <Card key={patient.id} className="border-border/50 hover:shadow-lg transition-shadow cursor-pointer">
+              <Card key={patient._id} className="border-border/50 hover:shadow-lg transition-shadow cursor-pointer">
                 <CardContent className="p-6">
                   <div className="flex items-start justify-between">
                     <div className="flex gap-4">
@@ -92,7 +111,7 @@ const Patients = () => {
                     <Button variant="outline" size="sm">View</Button>
                   </div>
                   <div className="mt-4 pt-4 border-t border-border text-sm text-muted-foreground">
-                    Last visit: {patient.lastVisit}
+                    Last visit: {patient.createdAt ? new Date(patient.createdAt).toLocaleDateString() : "N/A"}
                   </div>
                 </CardContent>
               </Card>
