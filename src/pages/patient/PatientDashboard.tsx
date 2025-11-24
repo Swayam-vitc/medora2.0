@@ -1,7 +1,9 @@
 import { useState, useEffect } from "react";
 import PatientSidebar from "@/components/PatientSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Calendar, Activity, Pill, FileText } from "lucide-react";
+import { Users, Calendar, Activity, AlertCircle, Clock, Pill, FileText } from "lucide-react";
+import { useAppointments } from "@/context/AppointmentsContext";
+import Notifications from "@/components/Notifications";
 import { Button } from "@/components/ui/button";
 
 const PatientDashboard = () => {
@@ -32,9 +34,12 @@ const PatientDashboard = () => {
       <PatientSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {userName}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back, {userName}</p>
+            </div>
+            <Notifications />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -46,7 +51,7 @@ const PatientDashboard = () => {
                       <p className="text-sm text-muted-foreground">{stat.label}</p>
                       <p className="text-3xl font-bold mt-2">{stat.value}</p>
                     </div>
-                    <stat.icon className={`h-12 w-12 ${stat.color}`} />
+                    <stat.icon className={`h - 12 w - 12 ${stat.color} `} />
                   </div>
                 </CardContent>
               </Card>

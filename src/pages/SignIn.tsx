@@ -7,9 +7,12 @@ import { useNavigate } from "react-router-dom";
 import { Heart, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 
+import { useAppointments } from "@/context/AppointmentsContext";
+
 const SignIn = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { refreshAppointments } = useAppointments();
 
   // API URL from environment variable
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
@@ -57,6 +60,9 @@ const SignIn = () => {
       // Save token + user info
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data));
+
+      // Refresh appointments context to load user-specific data
+      await refreshAppointments();
 
       toast({
         title: "Welcome Back!",

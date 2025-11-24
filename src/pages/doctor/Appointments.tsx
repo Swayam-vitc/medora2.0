@@ -2,9 +2,8 @@ import { useState } from "react";
 import DoctorSidebar from "@/components/DoctorSidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, User, Video } from "lucide-react";
+import { Calendar, Clock, User, Video, CheckCircle, XCircle } from "lucide-react";
 import { useAppointments } from "@/context/AppointmentsContext";
-import { v4 as uuidv4 } from "uuid";
 import {
   Dialog,
   DialogTrigger,
@@ -14,39 +13,40 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
 
 const Appointments = () => {
-  const { appointments, addAppointment } = useAppointments();
-
-  // Dialog Control
+  const { appointments } = useAppointments();
   const [open, setOpen] = useState(false);
 
-  // Form State
-  const [doctor, setDoctor] = useState("");
-  const [date, setDate] = useState("");
-  const [time, setTime] = useState("");
-  const [location, setLocation] = useState("");
-  const [type, setType] = useState("");
+  // Filter to ensure we only show appointments where this user is the doctor
+  // (Though the backend/context should already filter this, it's good for UI consistency if context is shared)
+  // Actually, context already filters based on role/ID.
 
-  const handleSubmit = () => {
-    if (!doctor || !date || !time) return;
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
-    addAppointment({
-      id: uuidv4(),
-      doctor,
-      date,
-      time,
-      location,
-      type,
-    });
+  const handleStatusUpdate = async (id: string, newStatus: 'confirmed' | 'cancelled') => {
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
 
-    // Close and clear form
-    setOpen(false);
-    setDoctor("");
-    setDate("");
-    setTime("");
-    setLocation("");
-    setType("");
+      const res = await fetch(`${API_URL}/api/appointments/${id}/status`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ status: newStatus })
+      });
+
+      if (res.ok) {
+        window.location.reload();
+      } else {
+        console.error("Failed to update status");
+      }
+    } catch (error) {
+      console.error("Error updating status:", error);
+    }
   };
 
   return (
@@ -62,81 +62,20 @@ const Appointments = () => {
               <p className="text-muted-foreground">Manage your patient appointments</p>
             </div>
 
-            {/* Add Appointment Button */}
-            <Dialog open={open} onOpenChange={setOpen}>
-              <DialogTrigger asChild>
-                <Button className="bg-gradient-to-r from-primary to-medical-teal">
-                  <Calendar className="mr-2 h-4 w-4" />
-                  New Appointment
-                </Button>
-              </DialogTrigger>
-
-              <DialogContent>
-                <DialogHeader>
-                  <DialogTitle>Add New Appointment</DialogTitle>
-                </DialogHeader>
-
-                <div className="space-y-4">
-                  <div>
-                    <Label>Doctor Name</Label>
-                    <Input
-                      value={doctor}
-                      onChange={(e) => setDoctor(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Date</Label>
-                    <Input
-                      type="date"
-                      value={date}
-                      onChange={(e) => setDate(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Time</Label>
-                    <Input
-                      type="time"
-                      value={time}
-                      onChange={(e) => setTime(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Location</Label>
-                    <Input
-                      placeholder="Online / Hospital"
-                      value={location}
-                      onChange={(e) => setLocation(e.target.value)}
-                    />
-                  </div>
-
-                  <div>
-                    <Label>Type</Label>
-                    <Input
-                      placeholder="Consultation / Follow-up"
-                      value={type}
-                      onChange={(e) => setType(e.target.value)}
-                    />
-                  </div>
-
-                  <Button onClick={handleSubmit} className="w-full">
-                    Save Appointment
-                  </Button>
-                </div>
-              </DialogContent>
-            </Dialog>
+            {/* Doctor might not need to create appointments for themselves in this flow, 
+                but keeping the button if they want to manually schedule something for a patient 
+                (would need patient selection logic similar to patient side, but for now let's focus on viewing) 
+            */}
           </div>
 
           {/* Appointment List */}
           <div className="grid gap-4">
             {appointments.length === 0 ? (
-              <p className="text-muted-foreground p-4">No appointments yet.</p>
+              <p className="text-muted-foreground p-4">No appointments scheduled.</p>
             ) : (
               appointments.map((appointment) => (
                 <Card
-                  key={appointment.id}
+                  key={appointment._id || appointment.id}
                   className="border-border/50 hover:shadow-lg transition-shadow"
                 >
                   <CardContent className="p-6">
@@ -146,25 +85,58 @@ const Appointments = () => {
                           <User className="h-6 w-6 text-primary" />
                         </div>
                         <div>
-                          <h3 className="font-semibold text-lg">{appointment.doctor}</h3>
+                          <h3 className="font-semibold text-lg">
+                            {appointment.patientName || "Unknown Patient"}
+                          </h3>
                           <div className="text-sm text-muted-foreground">
                             {appointment.date}
                           </div>
-                          <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">
                               <Clock className="h-4 w-4" />
                               {appointment.time}
                             </span>
                             <span>{appointment.type}</span>
                             <span>{appointment.location}</span>
+                            <Badge variant={
+                              appointment.status === 'confirmed' ? 'default' :
+                                appointment.status === 'cancelled' ? 'destructive' :
+                                  'secondary'
+                            }>
+                              {appointment.status}
+                            </Badge>
                           </div>
                         </div>
                       </div>
 
-                      <Button variant="outline" size="sm">
-                        <Video className="h-4 w-4 mr-2" />
-                        Join Call
-                      </Button>
+                      <div className="flex gap-2">
+                        {appointment.status === 'pending' && (
+                          <>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-green-600 hover:text-green-700 hover:bg-green-50"
+                              onClick={() => handleStatusUpdate(appointment._id || appointment.id, 'confirmed')}
+                            >
+                              <CheckCircle className="h-4 w-4 mr-2" />
+                              Confirm
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                              onClick={() => handleStatusUpdate(appointment._id || appointment.id, 'cancelled')}
+                            >
+                              <XCircle className="h-4 w-4 mr-2" />
+                              Cancel
+                            </Button>
+                          </>
+                        )}
+                        <Button variant="outline" size="sm">
+                          <Video className="h-4 w-4 mr-2" />
+                          Join Call
+                        </Button>
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

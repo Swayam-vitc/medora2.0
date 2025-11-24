@@ -3,6 +3,7 @@ import DoctorSidebar from "@/components/DoctorSidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, Calendar, Activity, AlertCircle, Clock } from "lucide-react";
 import { useAppointments } from "@/context/AppointmentsContext";
+import Notifications from "@/components/Notifications";
 
 const DoctorDashboard = () => {
   const { appointments } = useAppointments();
@@ -40,9 +41,12 @@ const DoctorDashboard = () => {
       <DoctorSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
-          <div>
-            <h1 className="text-3xl font-bold">Dashboard</h1>
-            <p className="text-muted-foreground">Welcome back, {userName}</p>
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-3xl font-bold">Dashboard</h1>
+              <p className="text-muted-foreground">Welcome back, {userName}</p>
+            </div>
+            <Notifications />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -75,7 +79,7 @@ const DoctorDashboard = () => {
                       key={apt._id || index}
                       className="p-3 border-b flex items-center justify-between"
                     >
-                      <div className="font-medium">{apt.doctor}</div>
+                      <div className="font-medium">{apt.patientName}</div>
                       <div className="flex items-center gap-2 text-sm text-muted-foreground">
                         <Clock className="h-4 w-4" />
                         {apt.time}

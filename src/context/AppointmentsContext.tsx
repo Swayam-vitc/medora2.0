@@ -3,16 +3,21 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 export interface Appointment {
   _id?: string;
   id?: string;
-  doctor: string;
+  patientId: string;
+  patientName: string;
+  doctorId: string;
+  doctorName: string;
   date: string;
   time: string;
   location: string;
   type: string;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
 }
 
 interface AppointmentsContextType {
   appointments: Appointment[];
-  addAppointment: (apt: Appointment) => Promise<void>;
+  addAppointment: (apt: Omit<Appointment, '_id' | 'id' | 'status'>) => Promise<void>;
+  refreshAppointments: () => Promise<void>;
 }
 
 const AppointmentsContext = createContext<AppointmentsContextType | undefined>(undefined);
@@ -23,30 +28,69 @@ export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
-  // Fetch from DB on page load
-  useEffect(() => {
-    const fetchAppointments = async () => {
-      const res = await fetch(`${API_URL}/api/appointments`);
+  // Fetch appointments based on user role
+  const fetchAppointments = async () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      if (!userStr) return;
+
+      const user = JSON.parse(userStr);
+      const userId = user._id;
+      const userRole = user.role;
+
+      let endpoint = `${API_URL}/api/appointments`;
+
+      // Fetch role-specific appointments
+      if (userRole === 'patient') {
+        endpoint = `${API_URL}/api/appointments/patient/${userId}`;
+      } else if (userRole === 'doctor') {
+        endpoint = `${API_URL}/api/appointments/doctor/${userId}`;
+      }
+
+      const res = await fetch(endpoint, {
+        headers: {
+          Authorization: `Bearer ${user.token}`,
+        },
+      });
       const data = await res.json();
       setAppointments(data);
-    };
+    } catch (error) {
+      console.error("Error fetching appointments:", error);
+    }
+  };
+
+  // Fetch on mount and when user changes
+  useEffect(() => {
     fetchAppointments();
   }, []);
 
   // Add new appointment to DB
-  const addAppointment = async (apt: Appointment) => {
-    const res = await fetch(`${API_URL}/api/appointments`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(apt),
-    });
+  const addAppointment = async (apt: Omit<Appointment, '_id' | 'id' | 'status'>) => {
+    try {
+      const res = await fetch(`${API_URL}/api/appointments`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${JSON.parse(localStorage.getItem("user") || "{}").token}`,
+        },
+        body: JSON.stringify(apt),
+      });
 
-    const data = await res.json();
-    setAppointments((prev) => [...prev, data]);
+      if (!res.ok) {
+        const error = await res.json();
+        throw new Error(error.message || "Failed to create appointment");
+      }
+
+      const data = await res.json();
+      setAppointments((prev) => [data, ...prev]);
+    } catch (error) {
+      console.error("Error creating appointment:", error);
+      throw error;
+    }
   };
 
   return (
-    <AppointmentsContext.Provider value={{ appointments, addAppointment }}>
+    <AppointmentsContext.Provider value={{ appointments, addAppointment, refreshAppointments: fetchAppointments }}>
       {children}
     </AppointmentsContext.Provider>
   );

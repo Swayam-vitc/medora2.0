@@ -9,6 +9,7 @@ import appointmentRoutes from "./routes/appointmentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import diseaseRoutes from "./routes/diseaseRoutes.js";
+import notificationRoutes from "./routes/notificationRoutes.js";
 
 dotenv.config();
 
@@ -53,6 +54,7 @@ app.use("/api/appointments", appointmentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/diseases", diseaseRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health-check / base route
 app.get("/", (req, res) => {
