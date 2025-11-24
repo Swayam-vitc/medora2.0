@@ -1,5 +1,5 @@
 import { useState } from "react";
-import DoctorSidebar from "@/components/DoctorSidebar";
+import PatientSidebar from "@/components/PatientSidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Calendar, Clock, User, Video } from "lucide-react";
@@ -48,14 +48,14 @@ const Appointments = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      <DoctorSidebar />
+      <PatientSidebar />
       <main className="flex-1 p-8">
         <div className="max-w-7xl mx-auto space-y-8">
 
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-3xl font-bold">Appointments</h1>
-              <p className="text-muted-foreground">Manage your patient appointments</p>
+              <p className="text-muted-foreground">Book and manage your appointments</p>
             </div>
 
             <Dialog open={open} onOpenChange={setOpen}>

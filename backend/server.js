@@ -8,6 +8,7 @@ import { connectDB } from "./config/db.js";
 import appointmentRoutes from "./routes/appointmentRoutes.js";
 import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
+import diseaseRoutes from "./routes/diseaseRoutes.js";
 
 dotenv.config();
 
@@ -51,6 +52,7 @@ try {
 app.use("/api/appointments", appointmentRoutes);
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/diseases", diseaseRoutes);
 
 // Health-check / base route
 app.get("/", (req, res) => {

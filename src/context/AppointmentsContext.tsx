@@ -2,6 +2,7 @@ import { createContext, useContext, useState, useEffect, ReactNode } from "react
 
 export interface Appointment {
   _id?: string;
+  id?: string;
   doctor: string;
   date: string;
   time: string;
@@ -18,7 +19,7 @@ const AppointmentsContext = createContext<AppointmentsContextType | undefined>(u
 
 export const AppointmentsProvider = ({ children }: { children: ReactNode }) => {
   // API URL from environment variable
-  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
 
   const [appointments, setAppointments] = useState<Appointment[]>([]);
 
