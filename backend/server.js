@@ -10,6 +10,7 @@ import authRoutes from "./routes/authRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
 import diseaseRoutes from "./routes/diseaseRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
+import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 
 dotenv.config();
 
@@ -55,6 +56,7 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/diseases", diseaseRoutes);
 app.use("/api/notifications", notificationRoutes);
+app.use("/api/medical-records", medicalRecordRoutes);
 
 // Health-check / base route
 app.get("/", (req, res) => {
