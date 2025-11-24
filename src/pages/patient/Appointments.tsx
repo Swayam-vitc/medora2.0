@@ -28,6 +28,15 @@ interface Doctor {
   specialization?: string;
 }
 
+const formatTime = (time: string) => {
+  if (!time) return "";
+  const [hours, minutes] = time.split(":");
+  const h = parseInt(hours, 10);
+  const ampm = h >= 12 ? "PM" : "AM";
+  const h12 = h % 12 || 12;
+  return `${h12}:${minutes} ${ampm}`;
+};
+
 const Appointments = () => {
   const { appointments, addAppointment } = useAppointments();
   const { toast } = useToast();
@@ -242,7 +251,7 @@ const Appointments = () => {
 
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mt-1">
                             <span className="flex items-center gap-1">
-                              <Clock className="h-4 w-4" /> {apt.time}
+                              <Clock className="h-4 w-4" /> {formatTime(apt.time)}
                             </span>
                             <span>{apt.type}</span>
                             <span>{apt.location}</span>
