@@ -6,6 +6,7 @@ import { Label } from "@/components/ui/label";
 import { useNavigate } from "react-router-dom";
 import { Heart, UserRound, Stethoscope, ArrowLeft } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import GravityBackground from "@/components/GravityBackground";
 
 type UserRole = "patient" | "doctor" | null;
 
@@ -119,8 +120,9 @@ const SignUp = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-background via-secondary/20 to-background flex items-center justify-center p-4">
-      <Card className="w-full max-w-md shadow-2xl border-border/50 bg-card/50 backdrop-blur-sm">
+    <div className="min-h-screen flex items-center justify-center p-4 relative overflow-hidden">
+      <GravityBackground />
+      <Card className="w-full max-w-md shadow-2xl border-border/50 bg-card/50 backdrop-blur-sm z-10">
         <CardHeader className="space-y-1">
           <div className="flex items-center justify-between">
             <Button

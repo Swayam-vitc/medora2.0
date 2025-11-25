@@ -4,16 +4,18 @@ import {
   getAllUsers,
   getDoctors,
   getPatients,
+  getPatientsWithAppointments,
   createPatient,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
 const router = express.Router();
 
-// You can wrap these with `protect` if you want them authenticated
-router.get("/", protect, getAllUsers);
-router.get("/doctors", protect, getDoctors);
+// IMPORTANT: More specific routes MUST come before general ones
+router.get("/patients/with-appointments", protect, getPatientsWithAppointments);
 router.get("/patients", protect, getPatients);
 router.post("/patients", protect, createPatient);
+router.get("/doctors", protect, getDoctors);
+router.get("/", protect, getAllUsers);
 
 export default router;

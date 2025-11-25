@@ -12,6 +12,7 @@ import diseaseRoutes from "./routes/diseaseRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
 import prescriptionRoutes from "./routes/prescriptionRoutes.js";
+import reminderRoutes from "./routes/reminderRoutes.js";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -64,6 +65,7 @@ app.use("/api/diseases", diseaseRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
 app.use("/api/prescriptions", prescriptionRoutes);
+app.use("/api/reminders", reminderRoutes);
 
 // Health-check / base route
 app.get("/", (req, res) => {

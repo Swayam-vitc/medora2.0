@@ -1,5 +1,6 @@
-// backend/controllers/userController.js
 import User from "../models/User.js";
+import Appointment from "../models/Appointment.js";
+import jwt from "jsonwebtoken";
 
 // GET /api/users
 export const getAllUsers = async (_req, res) => {
@@ -31,6 +32,30 @@ export const getPatients = async (_req, res) => {
   } catch (error) {
     console.error("Get patients error:", error);
     res.status(500).json({ message: "Server error fetching patients" });
+  }
+};
+
+// GET /api/users/patients/with-appointments - Get patients with confirmed appointments
+export const getPatientsWithAppointments = async (req, res) => {
+  try {
+    const doctorId = req.user.id; // From auth middleware
+
+    // Find all confirmed appointments for this doctor
+    const confirmedAppointments = await Appointment.find({
+      doctorId,
+      status: 'confirmed'
+    }).distinct('patientId');
+
+    // Get unique patient IDs and fetch patient details
+    const patients = await User.find({
+      _id: { $in: confirmedAppointments },
+      role: "patient"
+    }).select("-password");
+
+    res.json(patients);
+  } catch (error) {
+    console.error("Get patients with appointments error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 

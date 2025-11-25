@@ -1,107 +1,108 @@
 import { useState, useEffect } from "react";
 import { Bell } from "lucide-react";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
-import { ScrollArea } from "@/components/ui/scroll-area";
-
-interface Notification {
-    _id: string;
-    message: string;
-    type: string;
-    read: boolean;
-    createdAt: string;
-}
+import {
+    DropdownMenu,
+    DropdownMenuContent,
+    DropdownMenuItem,
+    DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 const Notifications = () => {
-    const [notifications, setNotifications] = useState<Notification[]>([]);
+    const [notifications, setNotifications] = useState<any[]>([]);
     const [unreadCount, setUnreadCount] = useState(0);
     const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5001';
+
+    useEffect(() => {
+        fetchNotifications();
+        const interval = setInterval(fetchNotifications, 30000);
+        return () => clearInterval(interval);
+    }, []);
 
     const fetchNotifications = async () => {
         try {
             const userStr = localStorage.getItem("user");
             if (!userStr) return;
-            const token = JSON.parse(userStr).token;
 
+            const user = JSON.parse(userStr);
             const res = await fetch(`${API_URL}/api/notifications`, {
-                headers: { Authorization: `Bearer ${token}` }
+                headers: { Authorization: `Bearer ${user.token}` }
             });
+
+            if (!res.ok) {
+                // console.error(`Notifications API error: ${res.status}`);
+                return;
+            }
+
             const data = await res.json();
-            setNotifications(data);
-            setUnreadCount(data.filter((n: Notification) => !n.read).length);
+
+            // Ensure data is an array
+            if (Array.isArray(data)) {
+                setNotifications(data);
+                setUnreadCount(data.filter((n: any) => !n.read).length);
+            } else {
+                // console.error("Invalid notifications response:", data);
+                setNotifications([]);
+                setUnreadCount(0);
+            }
         } catch (error) {
-            console.error("Error fetching notifications:", error);
+            // console.error("Error fetching notifications:", error);
+            // Don't crash - just set empty array
+            setNotifications([]);
+            setUnreadCount(0);
         }
     };
 
     const markAsRead = async (id: string) => {
         try {
             const userStr = localStorage.getItem("user");
-            const token = JSON.parse(userStr).token;
+            if (!userStr) return;
 
+            const user = JSON.parse(userStr);
             await fetch(`${API_URL}/api/notifications/${id}/read`, {
-                method: 'PATCH',
-                headers: { Authorization: `Bearer ${token}` }
+                method: "PATCH",
+                headers: { Authorization: `Bearer ${user.token}` }
             });
 
-            // Update local state
-            setNotifications(prev => prev.map(n =>
-                n._id === id ? { ...n, read: true } : n
-            ));
-            setUnreadCount(prev => Math.max(0, prev - 1));
+            fetchNotifications();
         } catch (error) {
             console.error("Error marking notification as read:", error);
         }
     };
 
-    useEffect(() => {
-        fetchNotifications();
-        // Poll every 30 seconds
-        const interval = setInterval(fetchNotifications, 30000);
-        return () => clearInterval(interval);
-    }, []);
-
     return (
-        <Popover>
-            <PopoverTrigger asChild>
-                <Button variant="ghost" size="icon" className="relative">
+        <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+                <Button variant="outline" size="icon" className="relative">
                     <Bell className="h-5 w-5" />
                     {unreadCount > 0 && (
-                        <span className="absolute top-0 right-0 h-2 w-2 rounded-full bg-red-500" />
+                        <span className="absolute -top-1 -right-1 h-5 w-5 rounded-full bg-destructive text-destructive-foreground text-xs flex items-center justify-center">
+                            {unreadCount}
+                        </span>
                     )}
                 </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-80" align="end">
-                <div className="font-semibold mb-2">Notifications</div>
-                <ScrollArea className="h-[300px]">
-                    {notifications.length === 0 ? (
-                        <p className="text-sm text-muted-foreground p-4 text-center">
-                            No notifications
-                        </p>
-                    ) : (
-                        <div className="space-y-2">
-                            {notifications.map((notification) => (
-                                <div
-                                    key={notification._id}
-                                    className={`p-3 rounded-lg text-sm border ${notification.read ? 'bg-background' : 'bg-muted/50'
-                                        }`}
-                                    onClick={() => !notification.read && markAsRead(notification._id)}
-                                >
-                                    <p>{notification.message}</p>
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        {new Date(notification.createdAt).toLocaleDateString()}
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </ScrollArea>
-            </PopoverContent>
-        </Popover>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-80">
+                {notifications.length === 0 ? (
+                    <div className="p-4 text-center text-sm text-muted-foreground">
+                        No notifications
+                    </div>
+                ) : (
+                    notifications.slice(0, 5).map((notification) => (
+                        <DropdownMenuItem
+                            key={notification._id}
+                            onClick={() => markAsRead(notification._id)}
+                            className={notification.read ? "opacity-60" : ""}
+                        >
+                            <div className="flex flex-col gap-1">
+                                <p className="font-medium text-sm">{notification.title}</p>
+                                <p className="text-xs text-muted-foreground">{notification.message}</p>
+                            </div>
+                        </DropdownMenuItem>
+                    ))
+                )}
+            </DropdownMenuContent>
+        </DropdownMenu>
     );
 };
 
