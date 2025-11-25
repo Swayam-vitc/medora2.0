@@ -20,69 +20,87 @@ const PatientChatbot = () => {
   // ✅ AI Integration - Same as Doctor Chatbot
   // ---------------------------------------
   const handleSend = async () => {
-  if (!input.trim()) return;
+    if (!input.trim()) return;
 
-  const userMessage = { role: "user", content: input };
+    const userMessage = { role: "user", content: input };
 
-  const prompt = `
-You are a Medical Diagnostic Assistant designed to provide medically accurate, evidence-based information.
+    const prompt = `
+You are a Medical Diagnostic Assistant designed to provide medically accurate, evidence-based information in CLEAR, EASY-TO-UNDERSTAND language.
+
+CRITICAL FORMATTING RULES:
+- Use short paragraphs (2-3 sentences max)
+- Use bullet points (•) for lists
+- Use numbered steps (1., 2., 3.) for sequential instructions
+- Use clear section headers with line breaks
+- Avoid complex medical jargon - explain terms in simple words
+- Use analogies when helpful
+
 Your role is to help users understand symptoms, possible causes, risk factors, medication information, prevention steps, and when to seek urgent care.
 
-Guidelines:
+RESPONSE STRUCTURE - Always follow this format:
 
-- Do NOT diagnose users directly. Instead, provide possible conditions based on symptoms, with clear uncertainty language.
-- Ask clarifying questions when needed — such as duration, severity, age, medical history, medications, allergies, lifestyle, and accompanying symptoms.
-- Explain in simple, patient-friendly language.
-- Never give emergency-only instructions. Instead say:
-  “If you experience severe symptoms like ____, seek medical care immediately.”
-- Provide:
-  • Possible causes
-  • What symptoms mean
-  • Self-care steps
-  • When to see a doctor
-  • Red-flag symptoms
-  • Treatment options (high-level only)
-- Never prescribe medication or exact dosages.
-- Always include:
-  “This is general medical information, not a diagnosis.”
+**What This Might Mean:**
+• Brief, simple explanation
+• Possible causes in plain English
+
+**What You Should Know:**
+• Key symptoms to watch for
+• Duration and severity indicators
+
+**What You Can Do:**
+• Simple self-care steps (if applicable)
+• When to see a doctor
+• Red-flag symptoms requiring immediate care
+
+**Important Note:**
+This is general medical information, not a diagnosis. Always consult a qualified healthcare provider for proper medical advice.
+
+GUIDELINES:
+- Do NOT diagnose directly. Use phrases like "This could be..." or "Common causes include..."
+- Ask clarifying questions when needed (duration, severity, age, other symptoms)
+- Explain in 5th-grade reading level language
+- For emergencies, always say: "Seek immediate medical care if you experience [specific severe symptoms]"
+- Never prescribe specific medications or dosages
+- Be empathetic and reassuring
+- Keep responses concise but complete
 `;
 
-  setMessages((prev) => [...prev, userMessage]);
-  setInput("");
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
 
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [
-          { role: "system", content: prompt }, // ✅ SEND THE PROMPT HERE
-          ...messages,
-          userMessage
-        ],
-      }),
-    });
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: prompt }, // ✅ SEND THE PROMPT HERE
+            ...messages,
+            userMessage
+          ],
+        }),
+      });
 
-    const data = await res.json();
+      const data = await res.json();
 
-    const aiMessage = {
-      role: "assistant",
-      content: data?.choices?.[0]?.message?.content || "Sorry, something went wrong.",
-    };
+      const aiMessage = {
+        role: "assistant",
+        content: data?.choices?.[0]?.message?.content || "Sorry, something went wrong.",
+      };
 
-    setMessages((prev) => [...prev, aiMessage]);
-  } catch (err) {
-    console.error(err);
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: "An error occurred. Please try again later." },
-    ]);
-  }
-};
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "An error occurred. Please try again later." },
+      ]);
+    }
+  };
 
 
   const quickQuestions = [
@@ -120,9 +138,8 @@ Guidelines:
                 {messages.map((message, index) => (
                   <div
                     key={index}
-                    className={`flex gap-3 ${
-                      message.role === "user" ? "justify-end" : ""
-                    }`}
+                    className={`flex gap-3 ${message.role === "user" ? "justify-end" : ""
+                      }`}
                   >
                     {message.role === "assistant" && (
                       <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary to-medical-teal flex items-center justify-center flex-shrink-0">
@@ -131,13 +148,19 @@ Guidelines:
                     )}
 
                     <div
-                      className={`rounded-lg p-4 max-w-[80%] ${
-                        message.role === "user"
+                      className={`rounded-lg p-4 max-w-[80%] ${message.role === "user"
                           ? "bg-gradient-to-r from-primary to-medical-teal text-primary-foreground"
                           : "bg-secondary"
-                      }`}
+                        }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <div className="text-sm whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{
+                          __html: message.content
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/• /g, '• ')
+                            .replace(/\n/g, '<br/>')
+                        }}
+                      />
                     </div>
                   </div>
                 ))}

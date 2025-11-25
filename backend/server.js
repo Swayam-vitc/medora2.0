@@ -11,6 +11,7 @@ import userRoutes from "./routes/userRoutes.js";
 import diseaseRoutes from "./routes/diseaseRoutes.js";
 import notificationRoutes from "./routes/notificationRoutes.js";
 import medicalRecordRoutes from "./routes/medicalRecordRoutes.js";
+import prescriptionRoutes from "./routes/prescriptionRoutes.js";
 import { fileURLToPath } from 'url';
 import { dirname, join } from 'path';
 
@@ -62,6 +63,7 @@ app.use("/api/users", userRoutes);
 app.use("/api/diseases", diseaseRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/medical-records", medicalRecordRoutes);
+app.use("/api/prescriptions", prescriptionRoutes);
 
 // Health-check / base route
 app.get("/", (req, res) => {

@@ -3,7 +3,7 @@ import MedicalRecord from "../models/MedicalRecord.js";
 // POST /api/medical-records
 export const createRecord = async (req, res) => {
     try {
-        const { patientId, diagnosis, medications, description, visitDate } = req.body;
+        const { patientId, recordType, diagnosis, medications, description, visitDate, attachments } = req.body;
         const doctorId = req.user.id; // From auth middleware
 
         if (!patientId || !diagnosis) {
@@ -13,10 +13,12 @@ export const createRecord = async (req, res) => {
         const record = await MedicalRecord.create({
             patientId,
             doctorId,
+            recordType,
             diagnosis,
             medications,
             description,
             visitDate: visitDate || Date.now(),
+            attachments: attachments || [],
         });
 
         res.status(201).json(record);

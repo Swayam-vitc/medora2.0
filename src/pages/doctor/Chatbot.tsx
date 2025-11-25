@@ -12,42 +12,93 @@ const DoctorChatbot = () => {
   const [input, setInput] = useState("");
 
   const handleSend = async () => {
-  if (!input.trim()) return;
+    if (!input.trim()) return;
 
-  const userMessage = { role: "user", content: input };
+    const userMessage = { role: "user", content: input };
 
-  setMessages((prev) => [...prev, userMessage]);
-  setInput("");
+    const systemPrompt = `
+You are a Professional Medical AI Assistant for healthcare providers. Provide evidence-based, clinically accurate information to support medical decision-making.
 
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini",
-        messages: [...messages, userMessage],
-      }),
-    });
+FORMATTING REQUIREMENTS:
+- Use clear, professional medical language
+- Structure responses with bullet points for readability
+- Include relevant clinical details
+- Cite medical guidelines when applicable
+- Use numbered lists for procedures/protocols
 
-    const data = await res.json();
+RESPONSE STRUCTURE:
 
-    const aiMessage = {
-      role: "assistant",
-      content: data?.choices?.[0]?.message?.content || "Error processing.",
-    };
+**Clinical Overview:**
+• Brief summary in medical terminology
+• Relevant pathophysiology if applicable
 
-    setMessages((prev) => [...prev, aiMessage]);
-  } catch (err) {
-    console.error(err);
-    setMessages((prev) => [
-      ...prev,
-      { role: "assistant", content: "Something went wrong." },
-    ]);
-  }
-};
+**Key Information:**
+• Drug interactions (if relevant)
+• Dosage considerations
+• Contraindications and precautions
+• Clinical guidelines/protocols
+
+**Practical Considerations:**
+• Patient counseling points
+• Monitoring parameters
+• Alternative options
+
+**References:**
+• Evidence-based sources when applicable
+
+CAPABILITIES:
+- Drug interaction checking
+- Dosage calculations and adjustments
+- Differential diagnosis support
+- Treatment protocol guidance
+- Medical guideline summaries
+- Clinical decision support
+- Patient education material suggestions
+
+IMPORTANT:
+- Provide clinical depth appropriate for medical professionals
+- Include safety warnings and contraindications
+- Suggest when specialist consultation may be needed
+- Support, but do not replace, clinical judgment
+- For complex cases, recommend additional investigation
+`;
+
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
+
+    try {
+      const res = await fetch("https://api.openai.com/v1/chat/completions", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_OPENAI_API_KEY}`,
+        },
+        body: JSON.stringify({
+          model: "gpt-4o-mini",
+          messages: [
+            { role: "system", content: systemPrompt },
+            ...messages,
+            userMessage
+          ],
+        }),
+      });
+
+      const data = await res.json();
+
+      const aiMessage = {
+        role: "assistant",
+        content: data?.choices?.[0]?.message?.content || "Error processing.",
+      };
+
+      setMessages((prev) => [...prev, aiMessage]);
+    } catch (err) {
+      console.error(err);
+      setMessages((prev) => [
+        ...prev,
+        { role: "assistant", content: "Something went wrong." },
+      ]);
+    }
+  };
 
 
   return (
@@ -83,13 +134,19 @@ const DoctorChatbot = () => {
                       </div>
                     )}
                     <div
-                      className={`rounded-lg p-4 max-w-[80%] ${
-                        message.role === "user"
-                          ? "bg-gradient-to-r from-primary to-medical-teal text-primary-foreground"
-                          : "bg-secondary"
-                      }`}
+                      className={`rounded-lg p-4 max-w-[80%] ${message.role === "user"
+                        ? "bg-gradient-to-r from-primary to-medical-teal text-primary-foreground"
+                        : "bg-secondary"
+                        }`}
                     >
-                      <p className="text-sm">{message.content}</p>
+                      <div className="text-sm whitespace-pre-wrap"
+                        dangerouslySetInnerHTML={{
+                          __html: message.content
+                            .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                            .replace(/• /g, '• ')
+                            .replace(/\n/g, '<br/>')
+                        }}
+                      />
                     </div>
                   </div>
                 ))}
@@ -102,7 +159,7 @@ const DoctorChatbot = () => {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyPress={(e) => e.key === "Enter" && handleSend()}
                   />
-                  <Button 
+                  <Button
                     onClick={handleSend}
                     className="bg-gradient-to-r from-primary to-medical-teal"
                   >
@@ -114,19 +171,31 @@ const DoctorChatbot = () => {
           </Card>
 
           <div className="grid md:grid-cols-3 gap-4">
-            <Card className="border-border/50 cursor-pointer hover:shadow-lg transition-shadow">
+            <Card
+              className="border-border/50 cursor-pointer hover:shadow-lg transition-shadow hover:bg-primary/5"
+              onClick={() => setInput("Check drug interactions between: ")}
+            >
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium">Drug Interactions</p>
+                <p className="text-sm font-medium text-primary">Drug Interactions</p>
+                <p className="text-xs text-muted-foreground mt-1">Check for contraindications</p>
               </CardContent>
             </Card>
-            <Card className="border-border/50 cursor-pointer hover:shadow-lg transition-shadow">
+            <Card
+              className="border-border/50 cursor-pointer hover:shadow-lg transition-shadow hover:bg-primary/5"
+              onClick={() => setInput("Calculate dosage for: \nPatient Age: \nWeight: \nDrug: ")}
+            >
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium">Dosage Calculator</p>
+                <p className="text-sm font-medium text-primary">Dosage Calculator</p>
+                <p className="text-xs text-muted-foreground mt-1">Pediatric & Adult Dosing</p>
               </CardContent>
             </Card>
-            <Card className="border-border/50 cursor-pointer hover:shadow-lg transition-shadow">
+            <Card
+              className="border-border/50 cursor-pointer hover:shadow-lg transition-shadow hover:bg-primary/5"
+              onClick={() => setInput("Summarize medical guidelines for: ")}
+            >
               <CardContent className="p-4 text-center">
-                <p className="text-sm font-medium">Medical Guidelines</p>
+                <p className="text-sm font-medium text-primary">Medical Guidelines</p>
+                <p className="text-xs text-muted-foreground mt-1">Latest clinical protocols</p>
               </CardContent>
             </Card>
           </div>

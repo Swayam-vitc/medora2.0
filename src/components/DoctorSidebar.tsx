@@ -18,8 +18,25 @@ import {
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 
+import { useState, useEffect } from "react";
+
 const DoctorSidebar = () => {
   const navigate = useNavigate();
+  const [doctorName, setDoctorName] = useState("Doctor");
+
+  useEffect(() => {
+    const userStr = localStorage.getItem("user");
+    if (userStr) {
+      try {
+        const user = JSON.parse(userStr);
+        if (user.name) {
+          setDoctorName(user.name);
+        }
+      } catch (e) {
+        console.error("Error parsing user data", e);
+      }
+    }
+  }, []);
 
   const menuItems = [
     { icon: LayoutDashboard, label: "Dashboard", path: "/doctor/dashboard" },
@@ -37,6 +54,8 @@ const DoctorSidebar = () => {
   ];
 
   const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
     navigate("/");
   };
 
@@ -48,7 +67,7 @@ const DoctorSidebar = () => {
           <Heart className="h-8 w-8 text-primary" />
           <div>
             <h1 className="font-bold text-lg">Medora Healthcare</h1>
-            <p className="text-xs text-muted-foreground">Doctor Portal</p>
+            <p className="text-sm font-medium text-primary">Dr. {doctorName}</p>
           </div>
         </div>
       </div>

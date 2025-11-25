@@ -12,6 +12,11 @@ const medicalRecordSchema = new mongoose.Schema(
             ref: "User",
             required: true,
         },
+        recordType: {
+            type: String,
+            enum: ["Lab Report", "X-Ray", "Consultation Notes", "Prescription", "Other"],
+            default: "Consultation Notes",
+        },
         diagnosis: {
             type: String,
             required: true,
@@ -23,6 +28,27 @@ const medicalRecordSchema = new mongoose.Schema(
                 frequency: { type: String, required: true },
                 startDate: { type: Date },
                 endDate: { type: Date },
+            },
+        ],
+        attachments: [
+            {
+                type: {
+                    type: String,
+                    enum: ["prescription", "xray", "lab_report", "other"],
+                    required: true,
+                },
+                name: {
+                    type: String,
+                    required: true,
+                },
+                url: {
+                    type: String,
+                    required: true,
+                },
+                uploadDate: {
+                    type: Date,
+                    default: Date.now,
+                },
             },
         ],
         description: {

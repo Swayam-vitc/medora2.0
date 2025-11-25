@@ -2,7 +2,7 @@ import { useState } from "react";
 import DoctorSidebar from "@/components/DoctorSidebar";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Calendar, Clock, User, Video, CheckCircle, XCircle } from "lucide-react";
+import { Calendar, Clock, User, Video, CheckCircle, XCircle, Plus } from "lucide-react";
 import { useAppointments } from "@/context/AppointmentsContext";
 import {
   Dialog,
@@ -58,6 +58,61 @@ const Appointments = () => {
     }
   };
 
+  const [newAppointment, setNewAppointment] = useState({
+    patientId: "",
+    date: "",
+    time: "",
+    type: "Check-up",
+    location: "Clinic",
+  });
+
+  const [patients, setPatients] = useState<any[]>([]);
+
+  // Fetch patients for the dropdown
+  const fetchPatients = async () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
+      const res = await fetch(`${API_URL}/api/users/patients`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      const data = await res.json();
+      setPatients(data);
+    } catch (error) {
+      console.error("Error fetching patients:", error);
+    }
+  };
+
+  const handleCreateAppointment = async () => {
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
+      const doctorId = userStr ? JSON.parse(userStr)._id : null;
+
+      const res = await fetch(`${API_URL}/api/appointments`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          ...newAppointment,
+          doctorId,
+          status: 'confirmed' // Auto-confirm doctor created appointments
+        })
+      });
+
+      if (res.ok) {
+        setOpen(false);
+        window.location.reload();
+      } else {
+        alert("Failed to create appointment");
+      }
+    } catch (error) {
+      console.error("Error creating appointment:", error);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-background">
       <DoctorSidebar />
@@ -71,10 +126,68 @@ const Appointments = () => {
               <p className="text-muted-foreground">Manage your patient appointments</p>
             </div>
 
-            {/* Doctor might not need to create appointments for themselves in this flow, 
-                but keeping the button if they want to manually schedule something for a patient 
-                (would need patient selection logic similar to patient side, but for now let's focus on viewing) 
-            */}
+            <Dialog open={open} onOpenChange={(val) => {
+              setOpen(val);
+              if (val) fetchPatients();
+            }}>
+              <DialogTrigger asChild>
+                <Button className="bg-gradient-to-r from-primary to-medical-teal">
+                  <Plus className="mr-2 h-4 w-4" /> New Appointment
+                </Button>
+              </DialogTrigger>
+              <DialogContent>
+                <DialogHeader>
+                  <DialogTitle>Schedule Appointment</DialogTitle>
+                </DialogHeader>
+                <div className="space-y-4 py-4">
+                  <div className="space-y-2">
+                    <Label>Patient</Label>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={newAppointment.patientId}
+                      onChange={(e) => setNewAppointment({ ...newAppointment, patientId: e.target.value })}
+                    >
+                      <option value="">Select Patient</option>
+                      {patients.map(p => (
+                        <option key={p._id} value={p._id}>{p.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label>Date</Label>
+                      <Input
+                        type="date"
+                        value={newAppointment.date}
+                        onChange={(e) => setNewAppointment({ ...newAppointment, date: e.target.value })}
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label>Time</Label>
+                      <Input
+                        type="time"
+                        value={newAppointment.time}
+                        onChange={(e) => setNewAppointment({ ...newAppointment, time: e.target.value })}
+                      />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Type</Label>
+                    <select
+                      className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                      value={newAppointment.type}
+                      onChange={(e) => setNewAppointment({ ...newAppointment, type: e.target.value })}
+                    >
+                      <option value="Check-up">Check-up</option>
+                      <option value="Consultation">Consultation</option>
+                      <option value="Follow-up">Follow-up</option>
+                      <option value="Emergency">Emergency</option>
+                    </select>
+                  </div>
+                  <Button className="w-full" onClick={handleCreateAppointment}>Schedule</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
           </div>
 
           {/* Appointment List */}

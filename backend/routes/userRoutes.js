@@ -4,6 +4,7 @@ import {
   getAllUsers,
   getDoctors,
   getPatients,
+  createPatient,
 } from "../controllers/userController.js";
 import { protect } from "../middleware/authMiddleware.js";
 
@@ -13,5 +14,6 @@ const router = express.Router();
 router.get("/", protect, getAllUsers);
 router.get("/doctors", protect, getDoctors);
 router.get("/patients", protect, getPatients);
+router.post("/patients", protect, createPatient);
 
 export default router;

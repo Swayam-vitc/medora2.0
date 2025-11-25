@@ -115,22 +115,37 @@ const Patients = () => {
   const openDialog = () => dialogRef.current?.showModal();
   const closeDialog = () => dialogRef.current?.close();
 
-  const handleSubmit = () => {
-    if (!newPatient.name.trim()) return;
+  const handleSubmit = async () => {
+    if (!newPatient.name.trim() || !newPatient.email.trim()) {
+      alert("Name and Email are required");
+      return;
+    }
 
-    const patient = {
-      id: Date.now().toString(),
-      name: newPatient.name,
-      age: newPatient.age,
-      phone: newPatient.phone,
-      email: newPatient.email,
-      lastVisit: "New Patient",
-    };
+    try {
+      const userStr = localStorage.getItem("user");
+      const token = userStr ? JSON.parse(userStr).token : null;
 
-    setPatients([...patients, patient]);
+      const res = await fetch(`${API_URL}/api/users/patients`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(newPatient),
+      });
 
-    closeDialog();
-    setNewPatient({ name: "", age: "", phone: "", email: "" });
+      if (res.ok) {
+        fetchPatients(); // Refresh list
+        closeDialog();
+        setNewPatient({ name: "", age: "", phone: "", email: "" });
+      } else {
+        const data = await res.json();
+        alert(data.message || "Failed to add patient");
+      }
+    } catch (error) {
+      console.error("Error adding patient:", error);
+      alert("Error adding patient");
+    }
   };
 
   return (
